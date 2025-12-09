@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Discord Detectable Games List</title>
+    <!-- Favicon -->
+    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/4053/4053305.png" type="image/png">
+    
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome -->
@@ -159,6 +162,7 @@
                 <div class="relative w-full md:w-auto">
                     <select id="sortSelect" onchange="filterApps()" 
                         class="discord-input appearance-none py-2 pl-3 pr-8 rounded-lg text-sm shadow-sm focus:ring-2 focus:ring-[#5865F2] focus:border-transparent bg-transparent cursor-pointer">
+                        <option value="">Sort by</option>
                         <option value="asc">Name (A-Z)</option>
                         <option value="desc">Name (Z-A)</option>
                     </select>
@@ -429,7 +433,7 @@
             listContainer.innerHTML = '';
 
             if (apps.length === 0) {
-                listContainer.innerHTML = '<div class="text-center py-12 text-gray-500">No games found. Ask discord to add it first.</div>';
+                listContainer.innerHTML = '<div class="text-center py-12 text-gray-500">No apps found.</div>';
                 return;
             }
 
@@ -503,17 +507,19 @@
                 return matchesSearch && matchesTheme;
             });
 
-            // 2. Sort
-            filtered.sort((a, b) => {
-                const nameA = (a.name || "").toLowerCase();
-                const nameB = (b.name || "").toLowerCase();
-                
-                if (sortOrder === 'asc') {
-                    return nameA.localeCompare(nameB);
-                } else {
-                    return nameB.localeCompare(nameA);
-                }
-            });
+            // 2. Sort (Conditional)
+            if (sortOrder) {
+                filtered.sort((a, b) => {
+                    const nameA = (a.name || "").toLowerCase();
+                    const nameB = (b.name || "").toLowerCase();
+                    
+                    if (sortOrder === 'asc') {
+                        return nameA.localeCompare(nameB);
+                    } else {
+                        return nameB.localeCompare(nameA);
+                    }
+                });
+            }
 
             // 3. Render
             renderApps(filtered);
