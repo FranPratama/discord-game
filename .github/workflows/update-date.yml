@@ -36,7 +36,7 @@ jobs:
           # Only commit if the date actually changed
           if [[ -n $(git status -s) ]]; then
             git add README.md
-            git commit -m "docs: Update timestamp [skip ci]"
+            git commit -m "Update timestamp"
             git push
           else
             echo "No changes to commit"
