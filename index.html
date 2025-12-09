@@ -127,25 +127,36 @@
 
     <!-- Header -->
     <header id="mainHeader" class="bg-white dark:bg-[#202225] border-b border-gray-200 dark:border-gray-800 sticky top-0 z-50 transition-colors duration-300">
-        <div class="container mx-auto px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-4 max-w-5xl">
+        <div class="container mx-auto px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-4 max-w-6xl">
             <div class="flex items-center gap-3">
                 <i class="fa-brands fa-discord text-2xl text-[#5865F2]"></i>
-                <h1 class="text-lg font-bold tracking-tight">Detectable Apps</h1>
+                <h1 class="text-lg font-bold tracking-tight">Detectable Games</h1>
             </div>
             
-            <div class="flex items-center gap-3 w-full md:w-auto">
+            <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
                 <!-- Search Bar -->
-                <div class="relative flex-grow md:w-64 group">
+                <div class="relative flex-grow md:w-56 group">
                     <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 group-focus-within:text-[#5865F2] transition-colors">
                         <i class="fas fa-search text-sm"></i>
                     </span>
-                    <input type="text" id="searchInput" placeholder="Search 15,000+ games..." 
+                    <input type="text" id="searchInput" placeholder="Search games..." 
                         class="discord-input w-full py-2 pl-9 pr-4 rounded-lg text-sm shadow-sm focus:ring-2 focus:ring-[#5865F2] focus:border-transparent"
                         onkeyup="filterApps()">
                 </div>
 
+                <!-- Theme Filter Dropdown -->
+                <div class="relative w-full md:w-40">
+                    <select id="themeSelect" onchange="filterApps()" 
+                        class="discord-input w-full appearance-none py-2 pl-3 pr-8 rounded-lg text-sm shadow-sm focus:ring-2 focus:ring-[#5865F2] focus:border-transparent bg-transparent cursor-pointer truncate">
+                        <option value="">All Themes</option>
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
+                        <i class="fas fa-chevron-down text-xs"></i>
+                    </div>
+                </div>
+
                 <!-- Sort Dropdown -->
-                <div class="relative">
+                <div class="relative w-full md:w-auto">
                     <select id="sortSelect" onchange="filterApps()" 
                         class="discord-input appearance-none py-2 pl-3 pr-8 rounded-lg text-sm shadow-sm focus:ring-2 focus:ring-[#5865F2] focus:border-transparent bg-transparent cursor-pointer">
                         <option value="asc">Name (A-Z)</option>
@@ -380,8 +391,37 @@
 
         function handleDataSuccess(data) {
             allApps = Array.isArray(data) ? data : (data.applications || []);
-            // Use filterApps to trigger sort + render
+            
+            // 1. Extract themes and populate dropdown
+            populateThemeFilter(allApps);
+
+            // 2. Render
             filterApps(); 
+        }
+
+        function populateThemeFilter(apps) {
+            const themeSet = new Set();
+            
+            apps.forEach(app => {
+                let themes = [];
+                if (app.themes && Array.isArray(app.themes)) themes = app.themes;
+                else if (app.genres && Array.isArray(app.genres)) themes = app.genres.map(g => g.name || g);
+                
+                themes.forEach(t => themeSet.add(t));
+            });
+
+            const sortedThemes = Array.from(themeSet).sort();
+            const select = document.getElementById('themeSelect');
+            
+            // Clear existing except first
+            select.innerHTML = '<option value="">All Themes</option>';
+            
+            sortedThemes.forEach(t => {
+                const opt = document.createElement('option');
+                opt.value = t;
+                opt.innerText = t;
+                select.appendChild(opt);
+            });
         }
 
         function renderApps(apps) {
@@ -389,7 +429,7 @@
             listContainer.innerHTML = '';
 
             if (apps.length === 0) {
-                listContainer.innerHTML = '<div class="text-center py-12 text-gray-500">No apps found.</div>';
+                listContainer.innerHTML = '<div class="text-center py-12 text-gray-500">No games found. Ask discord to add it first.</div>';
                 return;
             }
 
@@ -440,13 +480,27 @@
         function filterApps() {
             const query = document.getElementById('searchInput').value.toLowerCase();
             const sortOrder = document.getElementById('sortSelect').value;
+            const themeFilter = document.getElementById('themeSelect').value;
 
             // 1. Filter
             let filtered = allApps.filter(app => {
                 const name = (app.name || "").toLowerCase();
                 let execs = "";
                 if(app.executables) execs = app.executables.map(e => e.name).join(" ").toLowerCase();
-                return name.includes(query) || execs.includes(query);
+                
+                // Search check
+                const matchesSearch = name.includes(query) || execs.includes(query);
+                
+                // Theme check
+                let matchesTheme = true;
+                if(themeFilter) {
+                    let themes = [];
+                    if (app.themes && Array.isArray(app.themes)) themes = app.themes;
+                    else if (app.genres && Array.isArray(app.genres)) themes = app.genres.map(g => g.name || g);
+                    matchesTheme = themes.includes(themeFilter);
+                }
+
+                return matchesSearch && matchesTheme;
             });
 
             // 2. Sort
