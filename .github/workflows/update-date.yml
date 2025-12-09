@@ -1,4 +1,4 @@
-name: Update Readme Date
+name: Update README Date
 
 on:
   push:
@@ -32,7 +32,7 @@ jobs:
           # Check if there are changes before committing
           if [[ -n $(git status -s) ]]; then
             git add README.md
-            git commit -m "docs: auto-update readme date [skip ci]"
+            git commit -m "docs: Auto-update README date [skip ci]"
             git push
           else
             echo "No changes to commit"
