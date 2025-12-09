@@ -1,4 +1,4 @@
-name: Update README Date
+name: Update Readme Date
 
 on:
   push:
@@ -15,24 +15,28 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Update Date in README
+      - name: Update Date and Time
+        env:
+          # IMPORTANT: Change this to your timezone (e.g., Asia/Jakarta)
+          # Otherwise it will default to UTC time.
+          TZ: Asia/Jakarta 
         run: |
-          # Get current date in specific format (e.g., 09 December 2025)
-          CURRENT_DATE=$(date +'%d %B %Y')
-
-          # Use sed to replace the line containing "Updated" with the new date
-          # This looks for "Updated" followed by anything and replaces the whole line
+          # Get current date and time (Day Month Year HH:MM:SS)
+          CURRENT_DATE=$(date +'%d %B %Y %H:%M:%S')
+          
+          # This replaces the specific line in README.md starting with "Updated"
+          # It replaces the whole line with "Updated " + the new timestamp
           sed -i "s/^Updated .*/Updated $CURRENT_DATE/" README.md
 
       - name: Commit and Push changes
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-
-          # Check if there are changes before committing
+          
+          # Only commit if the date actually changed
           if [[ -n $(git status -s) ]]; then
             git add README.md
-            git commit -m "docs: Auto-update README date [skip ci]"
+            git commit -m "docs: Update timestamp [skip ci]"
             git push
           else
             echo "No changes to commit"
