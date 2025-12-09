@@ -1,0 +1,39 @@
+name: Update Readme Date
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  update-date:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Update Date in README
+        run: |
+          # Get current date in specific format (e.g., 09 December 2025)
+          CURRENT_DATE=$(date +'%d %B %Y')
+
+          # Use sed to replace the line containing "Updated" with the new date
+          # This looks for "Updated" followed by anything and replaces the whole line
+          sed -i "s/^Updated .*/Updated $CURRENT_DATE/" README.md
+
+      - name: Commit and Push changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Check if there are changes before committing
+          if [[ -n $(git status -s) ]]; then
+            git add README.md
+            git commit -m "docs: auto-update readme date [skip ci]"
+            git push
+          else
+            echo "No changes to commit"
+          fi
