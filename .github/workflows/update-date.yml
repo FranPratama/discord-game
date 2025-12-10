@@ -1,4 +1,4 @@
-name: Update Readme Date
+name: Update README Date
 
 on:
   push:
@@ -17,8 +17,6 @@ jobs:
 
       - name: Update Date and Time
         env:
-          # IMPORTANT: Change this to your timezone (e.g., Asia/Jakarta)
-          # Otherwise it will default to UTC time.
           TZ: Asia/Jakarta 
         run: |
           # Get current date and time (Day Month Year HH:MM:SS)
